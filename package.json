@@ -1,0 +1,23 @@
+{
+  "name": "child-balancer",
+  "version": "0.0.1",
+  "description": "Simple NodeJS child process balancer",
+  "main": "balancer.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/olostan/child-balancer.git"
+  },
+  "keywords": [
+    "nodejs",
+    "balancer"
+  ],
+  "author": "olostan@gmail.com",
+  "license": "BSD-2-Clause",
+  "bugs": {
+    "url": "https://github.com/olostan/child-balancer/issues"
+  },
+  "homepage": "https://github.com/olostan/child-balancer"
+}
