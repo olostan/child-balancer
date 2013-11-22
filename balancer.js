@@ -9,12 +9,13 @@ function Balancer(script,config) {
     this.config = {
         pulseTime : 500,
         max_limit: 16,
-        min_limit: 1
+        min_limit: 1,
+        concurrency: 10,
+        args: []
     };
     for (var k in config) {
         if (config.hasOwnProperty(k)) this.config[k] = config[k];
     }
-
 
     var instance = this;
 
@@ -22,10 +23,11 @@ function Balancer(script,config) {
         var busy = 0;
         for (var i =0;i<instance.workers.length;i++)
         {
-            if (instance.workers[i].worked ||instance.workers[i].busy) busy++;
+            if (instance.workers[i].worked ||instance.workers[i].queried>0) busy++;
             instance.workers[i].worked = false;
         }
         var allWorked = busy == instance.workers.length;
+
         if (allWorked) {
             if (instance.workers.length<instance.config.max_limit) {
                 var newWorker = new Worker(instance);
@@ -34,13 +36,15 @@ function Balancer(script,config) {
                     newWorker.send(instance.queue.shift());
             }
         } else if (instance.workers.length>instance.config.min_limit) {
-            var killedWorker = instance.workers.pop();
-            killedWorker.closing = true;
-            if (!killedWorker.busy) killedWorker.worker.disconnect();
+            if (busy+1<instance.workers.length) {
+                var killedWorker = instance.workers.pop();
+                killedWorker.closing = true;
+                if (killedWorker.queried == 0) killedWorker.worker.disconnect();
+            }
         }
     }, this.config.pulseTime);
-
-    this.workers.push(new Worker(this));
+    for (var i=0;i<config.min_limit;i++)
+        this.workers.push(new Worker(this));
 }
 
 Balancer.prototype.tryNext = function() {
@@ -48,12 +52,12 @@ Balancer.prototype.tryNext = function() {
     var worker = undefined;
 
     for(var i=0;i<this.workers.length;i++) {
-        if (!this.workers[i].busy) {
+        if (this.workers[i].queried<this.config.concurrency) {
             worker = this.workers[i];
             break;
         }
     }
-    if (worker && !worker.busy) {
+    if (worker && worker.queried<this.config.concurrency) {
         worker.send(this.queue.shift());
     }
 };
@@ -81,14 +85,12 @@ module.exports = Balancer;
 // Internal class Worker for maintaining worker state
 function Worker(balancer) {
     this.balancer = balancer;
-    this.worker = cp.fork(balancer.script);
+    this.worker = cp.fork(balancer.script,balancer.config.args);
     this.queried = 0;
     this.closing = false;
-    this.busy = false;
     this.worked = false;
     var me = this;
     this.worker.on('message',function(msg) {
-        me.busy = false;
         me.worked = true;
         me.queried--;
         if (me.balancer._handlers)
@@ -101,6 +103,5 @@ function Worker(balancer) {
 }
 Worker.prototype.send = function(msg) {
     this.queried++;
-    this.busy = true;
     this.worker.send(msg);
 };

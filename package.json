@@ -1,6 +1,6 @@
 {
   "name": "child-balancer",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Simple NodeJS child process balancer",
   "main": "balancer.js",
   "scripts": {
