@@ -14,6 +14,10 @@ messages and reply it back to master process.
   * Setting concurency to 0 make worker to recieve all messages, no matter on how much was responded. In this
 no new worker would be ever created.
 
+### Installation
+
+`npm install child-balancer`
+
 ### Usage
 Original [send](http://nodejs.org/api/child_process.html#child_process_child_send_message_sendhandle) example:
 ```javascript
