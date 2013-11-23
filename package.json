@@ -11,8 +11,11 @@
     "url": "git://github.com/olostan/child-balancer.git"
   },
   "keywords": [
-    "nodejs",
-    "balancer"
+    "balancer",
+    "child_process",
+    "worker",
+    "fork",
+    "pubsub"
   ],
   "author": "olostan@gmail.com",
   "license": "BSD-2-Clause",
