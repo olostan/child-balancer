@@ -13,6 +13,8 @@ function Balancer(script,config) {
         concurrency: 10,
         args: []
     };
+    this.newWorkerHandler = null;
+
     for (var k in config) {
         if (config.hasOwnProperty(k)) this.config[k] = config[k];
     }
@@ -100,6 +102,7 @@ function Worker(balancer) {
         me.balancer.tryNext();
         if (me.closing) me.worker.disconnect();
     });
+    if (this.balancer.newWorkerHandler) this.balancer.newWorkerHandler(this);
 }
 Worker.prototype.send = function(msg) {
     this.queried++;
