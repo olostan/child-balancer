@@ -32,6 +32,7 @@ function Balancer(script,config) {
 
         if (allWorked) {
             if (instance.workers.length<instance.config.max_limit) {
+                //console.log("---- new worker",instance.script, " as ",instance.workers.length,"<",instance.config.max_limit );
                 var newWorker = new Worker(instance);
                 instance.workers.push(newWorker);
                 if (instance.queue.length>0)
@@ -45,8 +46,12 @@ function Balancer(script,config) {
             }
         }
     }, this.config.pulseTime);
-    for (var i=0;i<config.min_limit;i++)
-        this.workers.push(new Worker(this));
+    var balancer = this;
+    process.nextTick(function() {
+    for (var i=0;i<config.min_limit;i++)  {
+        balancer.workers.push(new Worker(balancer));
+    }
+    });
 }
 
 Balancer.prototype.tryNext = function() {
