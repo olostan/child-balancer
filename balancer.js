@@ -59,12 +59,12 @@ Balancer.prototype.tryNext = function() {
     var worker = undefined;
 
     for(var i=0;i<this.workers.length;i++) {
-        if (this.workers[i].queried<this.config.concurrency) {
+        if (this.workers[i].queried<this.config.concurrency || this.config.concurrency==0) {
             worker = this.workers[i];
             break;
         }
     }
-    if (worker && worker.queried<this.config.concurrency) {
+    if (worker && (worker.queried<this.config.concurrency||this.config.concurrency==0)) {
         worker.send(this.queue.shift());
     }
 };
