@@ -8,11 +8,12 @@ messages and reply it back to master process.
 * Spawns new woker in case if current worker is *busy* (see below).
 * Allows to specify minimum number of workers to reserve enough workers to answer on messages
 * Allows to specify maxumum number of workers. If all workers are busy, messages would be queued.
-* Allows to limit concurency of wokers: 
-  * Setting concurency to 1 make worker to execute only one message at time (so no async at all)
-  * Setting concurency to 10 make wokerder to accept up to 10 messages without responding back.
-  * Setting concurency to 0 make worker to recieve all messages, no matter on how much was responded. In this
+* Allows to limit concurrency of workers (by tracking task completeness, see "Usage"):
+  * Setting concurrency to 1 make worker to execute only one message at time (so no async at all)
+  * Setting concurrency to 10 make worker to accept up to 10 messages without responding back.
+  * Setting concurrency to 0 make worker to receive all messages, no matter on how much was responded. In this
 no new worker would be ever created.
+
 
 ### Installation
 
@@ -46,9 +47,29 @@ n.send({ hello: 'world' });
 ```
 
 It will create balancer that:
-* Allow each workers to accept up to 10 messages before balancer will create new worker
+* Allow each worker to access unlimited number of 'tracked' messages (see "Tracking of completeness")
 * Balancer will create up to 10 workers
 * Balancer will keep always 1 worker active
+
+### Tracking of completeness
+
+Balancer has an option to limit number of messages sent to each worker.
+
+To achieve that new type of messages was introduced: _$complete_ messages.
+
+To send message, that should be tracked, you need wrap message in `$complete` property, like: `{ '$complete': "Some message" }`. This
+will allow Balancer to track how many tracking messages were sent to worker.
+
+Upon completion, _worker_ should respond to _balancer_ message, that will be wrapped also with `$complete` property.
+
+Meanwhile both sides can send ordinary messages and they wouldn't be tracked.
+
+To configure Balancer to limit number of messages that could be processed by one client, you need to configure it:
+```
+{
+    concurrency: 2
+}
+```
 
 ### Syntax
 
