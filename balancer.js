@@ -60,7 +60,7 @@ Balancer.prototype.tryNext = function () {
     for (var i = 0; i < this.workers.length; i++) {
         var w = this.workers[i];
         //console.log("worker",i,"queued:", w.queried);
-        if ( this.workers[i].queried < this.config.concurrency || this.config.concurrency == 0)
+        if ( w.queried < this.config.concurrency || this.config.concurrency == 0)
         {
             if (worker == undefined || worker.queried >= this.workers[i].queried) worker = this.workers[i];
         }
@@ -113,6 +113,8 @@ function Worker(balancer) {
         if (msg['$complete']) {
             me.queried--;
             msg = msg['$complete'];
+            //console.log("[B] tracking [",me.queried,"] <-- ",msg);
+
         }
         if (me.balancer._handlers)
             for (var idx = 0; idx < me.balancer._handlers.length; idx++) me.balancer._handlers[idx](msg);
@@ -127,6 +129,7 @@ Worker.prototype.send = function (msg) {
     if (msg['$complete']) {
         this.queried++;
         msg = msg['$complete'];
+        //console.log("[B] tracking [",this.queried,"] --> ",msg);
     }
     this.worker.send(msg);
 };
