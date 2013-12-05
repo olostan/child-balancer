@@ -11,6 +11,7 @@ function Balancer(script, config) {
         max_limit: 4,
         min_limit: 1,
         concurrency: 0,
+        keepWarm:false,
         args: []
     };
     this.newWorkerHandler = null;
@@ -30,14 +31,14 @@ function Balancer(script, config) {
         var allWorked = busy == instance.workers.length;
 
         if (allWorked) {
-            if (instance.workers.length < instance.config.max_limit) {
+            if (instance.workers.length < instance.config.max_limit && instance.queue.length>0) {
                 var newWorker = new Worker(instance);
                 instance.workers.push(newWorker);
                 if (instance.queue.length > 0)
                     newWorker.send(instance.queue.shift());
             }
         } else if (instance.workers.length > instance.config.min_limit) {
-            if (busy + 1 < instance.workers.length) {
+            if (busy + instance.config.keepWarm?1:0 < instance.workers.length) {
                 var killedWorker = instance.workers.pop();
                 killedWorker.closing = true;
                 if (killedWorker.queried == 0) killedWorker.worker.disconnect();

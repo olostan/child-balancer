@@ -83,6 +83,7 @@ max_limit | Number | 16 | Maximum number of workers. If all workers busy and the
 concurrency | Number | 10 | Maximum number of messages that can be processed by one worker
 pulseTime | Number | 500 | Period in ms when balancer need to check if new worker should be run or some worker killed
 args | Array<Script> | [] | Arguments that should be passed to worker
+keepWarm | boolean | false | Should Balancer keep 1 worker even if there are no task queued?
 
 #### balancer.send(message)
 
